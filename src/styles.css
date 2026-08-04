@@ -1171,6 +1171,7 @@ img {
 .showcase-sticky {
   width: min(100%, 100vw);
   padding: clamp(5rem, 9vw, 8rem) 0;
+  padding-top: 120px;
 }
 
 .showcase-sticky .section-intro {

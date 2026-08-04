@@ -555,7 +555,7 @@ function HorizontalShowcase() {
         trigger: section,
 
         // Wait until section reaches center
-        start: "top center",
+        start: "top top",
 
         // Pin after entering
         pin: true,
