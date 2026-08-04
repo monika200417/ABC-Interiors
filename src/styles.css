@@ -1179,17 +1179,19 @@ img {
 }
 
 .showcase-track {
+  --showcase-card-width: calc(100vw - 2rem);
   display: flex;
   gap: 1rem;
   width: max-content;
-  padding: 0 max(1rem, calc((100vw - 1180px) / 2)) 2rem;
+  padding: 0 max(1rem, calc((100vw - var(--showcase-card-width)) / 2)) 2rem;
 }
 
 .showcase-card {
   position: relative;
   display: grid;
+  flex: 0 0 var(--showcase-card-width);
   grid-template-columns: minmax(16rem, 0.75fr) minmax(17rem, 0.65fr);
-  width: min(80vw, 58rem);
+  width: var(--showcase-card-width);
   min-height: 33rem;
   overflow: hidden;
   border: 1px solid rgb(var(--line));
@@ -1204,6 +1206,7 @@ img {
 }
 
 .showcase-card > div {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: end;
@@ -1238,6 +1241,10 @@ img {
 .showcase-meta small {
   color: rgb(var(--muted));
   line-height: 1.5;
+}
+
+.showcase-meta strong {
+  overflow-wrap: anywhere;
 }
 
 .showcase-card a {
@@ -1938,7 +1945,7 @@ footer span,
   }
 
   .showcase-card {
-    width: min(88vw, 48rem);
+    --showcase-card-width: calc(100vw - 2rem);
     grid-template-columns: 1fr;
   }
 
@@ -2078,12 +2085,14 @@ footer span,
   }
 
   .showcase-track {
+    --showcase-card-width: calc(100vw - 2rem);
     display: grid;
     width: auto;
     padding-inline: 1rem;
   }
 
   .showcase-card {
+    flex: none;
     width: 100%;
     min-height: auto;
   }

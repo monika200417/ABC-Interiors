@@ -519,29 +519,91 @@ function HorizontalShowcase() {
   const trackRef = useRef(null);
 
   useEffect(() => {
-    const section = sectionRef.current;
-    const track = trackRef.current;
-    if (!section || !track) return undefined;
+  const section = sectionRef.current;
+  const track = trackRef.current;
 
-    const mm = gsap.matchMedia();
-    mm.add("(min-width: 900px)", () => {
-      const tween = gsap.to(track, {
-        x: () => -(track.scrollWidth - section.clientWidth + 80),
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: () => `+=${track.scrollWidth - section.clientWidth + 380}`,
-          scrub: 1,
-          pin: true,
-          invalidateOnRefresh: true,
-        },
-      });
-      return () => tween.kill();
+  if (!section || !track) return;
+
+  const mm = gsap.matchMedia();
+
+  mm.add("(min-width: 900px)", () => {
+
+    const getScrollDistance = () =>
+      Math.max(0, track.scrollWidth - section.clientWidth);
+
+    const getCardStep = () => {
+      const card = track.querySelector(".showcase-card");
+
+      if (!card) return getScrollDistance();
+
+      const gap =
+        parseFloat(getComputedStyle(track).gap) || 16;
+
+      return card.getBoundingClientRect().width + gap;
+    };
+
+    gsap.set(track, {
+      x: 0
     });
 
-    return () => mm.revert();
-  }, []);
+    const tween = gsap.to(track, {
+      x: () => -getScrollDistance(),
+      ease: "none",
+
+      scrollTrigger: {
+
+        trigger: section,
+
+        // Wait until section reaches center
+        start: "top center",
+
+        // Pin after entering
+        pin: true,
+
+        scrub: 1,
+
+        end: () => "+=" + getScrollDistance(),
+
+        anticipatePin: 1,
+
+        invalidateOnRefresh: true,
+
+        snap: {
+          snapTo: (progress) => {
+
+            const distance = getScrollDistance();
+
+            const step = getCardStep();
+
+            if (!distance) return progress;
+
+            return (
+              Math.round(progress * distance / step) *
+              step /
+              distance
+            );
+
+          },
+
+          duration: 0.3,
+
+          ease: "power2.out"
+
+        }
+
+      }
+
+    });
+
+    return () => {
+      tween.kill();
+    };
+
+  });
+
+  return () => mm.revert();
+
+}, []);
 
   return (
     <section id="showcase" ref={sectionRef} className="showcase-section">
