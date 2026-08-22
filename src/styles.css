@@ -981,7 +981,8 @@ img {
 }
 
 .project-card-large {
-  min-height: 33rem;
+  height: min(62vh, 34rem);
+min-height: 0;
 }
 
 .project-card img,
@@ -1180,11 +1181,14 @@ img {
 }
 
 .showcase-track {
-  --showcase-card-width: calc(72rem, 88vw);
+  --showcase-card-width: min(48rem, 48vw);
   display: flex;
   gap: 1rem;
   width: max-content;
   padding-inline: max(4rem, calc((100vw - var(--showcase-card-width))/2));
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
 }
 
 .showcase-card {
@@ -1193,7 +1197,8 @@ img {
   flex: 0 0 var(--showcase-card-width);
   grid-template-columns: minmax(16rem, 0.75fr) minmax(17rem, 0.65fr);
   width: var(--showcase-card-width);
-  min-height: 33rem;
+  height: min(62vh, 44rem);
+  min-height: 0;
   overflow: hidden;
   border: 1px solid rgb(var(--line));
   background: rgb(var(--paper));
@@ -1205,6 +1210,7 @@ img {
   height: 100%;
   object-fit: cover;
 }
+
 
 .showcase-card > div {
   min-width: 0;

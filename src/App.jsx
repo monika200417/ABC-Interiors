@@ -518,126 +518,376 @@ function HorizontalShowcase() {
   const sectionRef = useRef(null);
   const trackRef = useRef(null);
 
-  useEffect(() => {
-  const section = sectionRef.current;
+  const animationRef = useRef(null);
+  const isDraggingRef = useRef(false);
+  const isHoveredRef = useRef(false);
+  const loopDistanceRef = useRef(0);
+
+useEffect(() => {
   const track = trackRef.current;
 
-  if (!section || !track) return;
+  if (!track) return;
 
-  const mm = gsap.matchMedia();
+  const originalCount = showcaseModules.length;
 
-  mm.add("(min-width: 900px)", () => {
+  const getDistance = () => {
+    const card = track.querySelector(".showcase-card");
 
-    const getScrollDistance = () =>
-      Math.max(0, track.scrollWidth - section.clientWidth);
+    if (!card) return 0;
 
-    const getCardStep = () => {
-      const card = track.querySelector(".showcase-card");
+    const gap =
+      parseFloat(getComputedStyle(track).gap) || 0;
 
-      if (!card) return getScrollDistance();
+    return (
+      originalCount *
+      (card.getBoundingClientRect().width + gap)
+    );
+  };
 
-      const gap =
-        parseFloat(getComputedStyle(track).gap) || 16;
+  let distance = getDistance();
 
-      return card.getBoundingClientRect().width + gap;
-    };
+  loopDistanceRef.current = distance;
+
+  const getX = () =>
+    Number(gsap.getProperty(track, "x")) || 0;
+
+  const normalize = (x) => {
+    if (!distance) return 0;
+
+    while (x > 0) {
+      x -= distance;
+    }
+
+    while (x <= -distance) {
+      x += distance;
+    }
+
+    return x;
+  };
+
+  const startAutoScroll = () => {
+    if (
+      isDraggingRef.current ||
+      isHoveredRef.current
+    ) {
+      return;
+    }
+
+    distance = getDistance();
+    loopDistanceRef.current = distance;
+
+    if (!distance) return;
+
+    const currentX = normalize(getX());
 
     gsap.set(track, {
-      x: 0
+      x: currentX,
     });
 
-    const tween = gsap.to(track, {
-      x: () => -getScrollDistance(),
+    animationRef.current?.kill();
+
+    const remaining = distance + currentX;
+
+    animationRef.current = gsap.to(track, {
+      x: -distance,
+      duration: 35 * (remaining / distance),
       ease: "none",
 
-      scrollTrigger: {
+      onComplete: () => {
+        gsap.set(track, {
+          x: 0,
+        });
 
-        trigger: section,
-
-        // Wait until section reaches center
-        start: "top top",
-
-        // Pin after entering
-        pin: true,
-
-        scrub: 1,
-
-        end: () => "+=" + getScrollDistance(),
-
-        anticipatePin: 1,
-
-        invalidateOnRefresh: true,
-
-        snap: {
-          snapTo: (progress) => {
-
-            const distance = getScrollDistance();
-
-            const step = getCardStep();
-
-            if (!distance) return progress;
-
-            return (
-              Math.round(progress * distance / step) *
-              step /
-              distance
-            );
-
-          },
-
-          duration: 0.3,
-
-          ease: "power2.out"
-
-        }
-
-      }
-
+        startAutoScroll();
+      },
     });
+  };
 
-    return () => {
-      tween.kill();
-    };
+  const pause = () => {
+    animationRef.current?.pause();
+  };
 
-  });
+  const resume = () => {
+    if (
+      !isDraggingRef.current &&
+      !isHoveredRef.current
+    ) {
+      startAutoScroll();
+    }
+  };
 
-  return () => mm.revert();
+  const onEnter = () => {
+    isHoveredRef.current = true;
+    pause();
+  };
 
+  const onLeave = () => {
+    isHoveredRef.current = false;
+    resume();
+  };
+
+  const onPointerDown = (event) => {
+    if (event.button !== 0) return;
+
+    isDraggingRef.current = true;
+
+    animationRef.current?.pause();
+
+    track._dragStartX = event.clientX;
+    track._dragStartY = event.clientY;
+    track._dragStartPosition = getX();
+    track._dragMoved = false;
+
+    track.style.cursor = "grabbing";
+
+    event.currentTarget.setPointerCapture(
+      event.pointerId
+    );
+  };
+
+  const onPointerMove = (event) => {
+    if (!isDraggingRef.current) return;
+
+    const movement =
+      event.clientX - track._dragStartX;
+
+    if (Math.abs(movement) > 5) {
+      track._dragMoved = true;
+    }
+
+    const newX =
+      track._dragStartPosition + movement;
+
+    gsap.set(track, {
+      x: normalize(newX),
+    });
+  };
+
+  const onPointerUp = (event) => {
+    if (!isDraggingRef.current) return;
+
+    isDraggingRef.current = false;
+
+    if (
+      event.currentTarget.hasPointerCapture(
+        event.pointerId
+      )
+    ) {
+      event.currentTarget.releasePointerCapture(
+        event.pointerId
+      );
+    }
+
+    track.style.cursor = "grab";
+
+    if (!isHoveredRef.current) {
+      startAutoScroll();
+    }
+  };
+
+  const onPointerCancel = (event) => {
+    isDraggingRef.current = false;
+
+    if (
+      event.currentTarget.hasPointerCapture(
+        event.pointerId
+      )
+    ) {
+      event.currentTarget.releasePointerCapture(
+        event.pointerId
+      );
+    }
+
+    track.style.cursor = "grab";
+
+    if (!isHoveredRef.current) {
+      startAutoScroll();
+    }
+  };
+
+  track.addEventListener(
+    "mouseenter",
+    onEnter
+  );
+
+  track.addEventListener(
+    "mouseleave",
+    onLeave
+  );
+
+  track.addEventListener(
+    "pointerdown",
+    onPointerDown
+  );
+
+  track.addEventListener(
+    "pointermove",
+    onPointerMove
+  );
+
+  track.addEventListener(
+    "pointerup",
+    onPointerUp
+  );
+
+  track.addEventListener(
+    "pointercancel",
+    onPointerCancel
+  );
+
+
+
+
+  const onResize = () => {
+    distance = getDistance();
+    loopDistanceRef.current = distance;
+  };
+
+  window.addEventListener("resize", onResize);
+  const onClick = (event) => {
+  if (track._dragMoved) {
+    event.preventDefault();
+    event.stopPropagation();
+    track._dragMoved = false;
+  }
+};
+
+track.addEventListener("click", onClick, true);
+  startAutoScroll();
+
+  return () => {
+    animationRef.current?.kill();
+
+    track.removeEventListener(
+      "mouseenter",
+      onEnter
+    );
+
+    track.removeEventListener(
+      "mouseleave",
+      onLeave
+    );
+
+    track.removeEventListener(
+      "pointerdown",
+      onPointerDown
+    );
+
+    track.removeEventListener(
+      "pointermove",
+      onPointerMove
+    );
+
+    track.removeEventListener(
+      "pointerup",
+      onPointerUp
+    );
+
+    track.removeEventListener(
+      "pointercancel",
+      onPointerCancel
+    );
+  track.removeEventListener(
+    "click",
+    onClick,
+    true
+  );
+    window.removeEventListener(
+      "resize",
+      onResize
+    );
+  };
 }, []);
 
+  const renderShowcaseCard = (
+    module,
+    index,
+    duplicate = false
+  ) => (
+    <article
+      className="showcase-card"
+      key={`${module.title}-${duplicate ? "duplicate" : "original"}-${index}`}
+      aria-hidden={duplicate}
+    >
+      <img
+        src={module.image}
+        alt={`${module.title} interior`}
+        loading="lazy"
+        draggable="false"
+      />
+
+      <div>
+        <span>{module.eyebrow}</span>
+
+        <h3>{module.title}</h3>
+
+        <p>{module.description}</p>
+
+        <ul>
+          {module.features.map((feature) => (
+            <li key={feature}>{feature}</li>
+          ))}
+        </ul>
+
+        <div className="showcase-meta">
+          <strong>
+            {module.materials.join(" / ")}
+          </strong>
+
+          <small>
+            {module.benefits.join(" | ")}
+          </small>
+        </div>
+
+        <a href="#contact">
+          Start this room <FiArrowRight />
+        </a>
+      </div>
+
+      <em>
+        {String((index % showcaseModules.length) + 1).padStart(
+          2,
+          "0"
+        )}
+      </em>
+    </article>
+  );
+
   return (
-    <section id="showcase" ref={sectionRef} className="showcase-section">
+    <section
+      id="showcase"
+      ref={sectionRef}
+      className="showcase-section"
+    >
       <div className="showcase-sticky">
+
         <SectionIntro
           eyebrow="Showcase Modules"
           title="Scroll down. The portfolio moves sideways."
           copy="Each module is treated like a room story, with materials, benefits, and a clear consultation path."
         />
-        <div className="showcase-track" ref={trackRef}>
-          {showcaseModules.map((module, index) => (
-            <article className="showcase-card" key={module.title}>
-              <img src={module.image} alt={`${module.title} interior`} loading="lazy" />
-              <div>
-                <span>{module.eyebrow}</span>
-                <h3>{module.title}</h3>
-                <p>{module.description}</p>
-                <ul>
-                  {module.features.map((feature) => (
-                    <li key={feature}>{feature}</li>
-                  ))}
-                </ul>
-                <div className="showcase-meta">
-                  <strong>{module.materials.join(" / ")}</strong>
-                  <small>{module.benefits.join(" | ")}</small>
-                </div>
-                <a href="#contact">
-                  Start this room <FiArrowRight />
-                </a>
-              </div>
-              <em>{String(index + 1).padStart(2, "0")}</em>
-            </article>
-          ))}
+
+        <div
+          className="showcase-track"
+          ref={trackRef}
+        >
+          {showcaseModules.map((module, index) =>
+            renderShowcaseCard(
+              module,
+              index,
+              false
+            )
+          )}
+
+          {showcaseModules.map((module, index) =>
+            renderShowcaseCard(
+              module,
+              index,
+              true
+            )
+          )}
         </div>
+
       </div>
     </section>
   );
