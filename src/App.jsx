@@ -354,7 +354,7 @@ function Services() {
     <section id="services" className="section services-section">
       <SectionIntro
         eyebrow="Capabilities"
-        title="Residential, commercial, and turnkey interiors under one exacting studio."
+        title="Spaces Designed to Feel Like They Were Made for You."
         copy="Every service is planned as part of a complete space, so function, finish, lighting, and installation stay aligned from first sketch to handover."
         align="center"
       />
