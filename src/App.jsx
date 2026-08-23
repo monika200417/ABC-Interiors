@@ -19,6 +19,16 @@ import {
   FiSun,
   FiX,
 } from "react-icons/fi";
+
+import kitchenInteriorsImage from "./assets/01_Kitchen_Interiors.jpg";
+const serviceImages = import.meta.glob(
+  "./assets/*.jpg",
+  {
+    eager: true,
+    query: "?url",
+    import: "default",
+  }
+);
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, FreeMode } from "swiper/modules";
 import Lightbox from "yet-another-react-lightbox";
@@ -350,6 +360,38 @@ function About() {
 }
 
 function Services() {
+  const servicesTrackRef = useRef(null);
+  const moveServices = (direction) => {
+  const track = servicesTrackRef.current;
+
+  if (!track) return;
+
+  const currentX = Number(gsap.getProperty(track, "x")) || 0;
+
+  const step = 26 * 16 + 20;
+
+  gsap.to(track, {
+    x: currentX + direction * step,
+    duration: 0.7,
+    ease: "power2.out",
+  });
+};
+
+  useEffect(() => {
+    const track = servicesTrackRef.current;
+
+    if (!track) return;
+
+    const distance = track.scrollWidth / 2;
+
+    gsap.to(track, {
+      x: -distance,
+      duration: 35,
+      ease: "none",
+      repeat: -1,
+    });
+  }, []);
+
   return (
     <section id="services" className="section services-section">
       <SectionIntro
@@ -358,23 +400,79 @@ function Services() {
         copy="Every service is planned as part of a complete space, so function, finish, lighting, and installation stay aligned from first sketch to handover."
         align="center"
       />
-      <div className="services-grid">
-        {services.map(([name, Icon], index) => (
-          <article className="service-card" key={name} data-reveal style={{ "--delay": `${(index % 8) * 0.04}s` }}>
-            <div className="service-icon">
-              <Icon />
-            </div>
-            <h3>{name}</h3>
-            <a href="#contact" aria-label={`Learn more about ${name}`}>
-              Learn more <FiArrowRight />
-            </a>
-          </article>
-        ))}
+
+      <div
+  className="services-grid"
+  ref={servicesTrackRef}
+  onMouseEnter={() => {
+    gsap.getTweensOf(servicesTrackRef.current).forEach(
+      (tween) => tween.pause()
+    );
+  }}
+  onMouseLeave={() => {
+    gsap.getTweensOf(servicesTrackRef.current).forEach(
+      (tween) => tween.resume()
+    );
+  }}
+>
+        {services.map(([name, Icon], index) => {
+          const imageNumber = String(index + 1).padStart(2, "0");
+
+          const imageKey = `./assets/${imageNumber}_${name.replace(
+            / /g,
+            "_"
+          )}.jpg`;
+
+          const serviceImage = serviceImages[imageKey];
+
+          return (
+            <article
+              className="service-card"
+              key={name}
+              data-reveal
+              style={{
+                "--delay": `${(index % 8) * 0.04}s`,
+                "--service-image": serviceImage
+                  ? `url(${serviceImage})`
+                  : "none",
+              }}
+            >
+              <div className="service-icon">
+                <Icon />
+              </div>
+
+              <h3>{name}</h3>
+
+              <a
+                href="#contact"
+                aria-label={`Learn more about ${name}`}
+              >
+                Learn more <FiArrowRight />
+              </a>
+            </article>
+          );
+        })}
       </div>
+      <div className="services-controls">
+  <button
+    type="button"
+    onClick={() => moveServices(1)}
+    aria-label="Move services right"
+  >
+    ←
+  </button>
+
+  <button
+    type="button"
+    onClick={() => moveServices(-1)}
+    aria-label="Move services left"
+  >
+    →
+  </button>
+</div>
     </section>
   );
 }
-
 function Projects() {
   const categories = ["All", "Kitchen", "Bedroom", "Living", "Office", "Commercial", "Villa", "Wardrobe", "Ceiling", "Luxury Homes"];
   const [active, setActive] = useState("All");

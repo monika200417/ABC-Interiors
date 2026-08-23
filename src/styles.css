@@ -750,8 +750,22 @@ img {
 
 .mission-grid div,
 .why-card,
-.service-card,
+.service-card {
+  /* your existing service-card properties */
+
+  background: linear-gradient(
+    145deg,
+    rgb(var(--paper) / 0.88),
+    rgb(var(--paper-2) / 0.88)
+  );
+
+  background-image: var(--service-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 .testimonial-card {
+
   border: 1px solid rgb(var(--line));
   background: linear-gradient(145deg, rgb(var(--paper) / 0.88), rgb(var(--paper) / 0.58));
   box-shadow: 0 24px 70px rgb(58 42 28 / 0.08);
@@ -877,18 +891,26 @@ img {
 }
 
 .services-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 3rem;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.25rem;
+  width: max-content;
+  padding-inline: 4rem;
+}
+.services-section {
+  overflow: hidden;
 }
 
 .service-card {
+  width: 26rem;
+height: 24rem;
+flex: 0 0 26rem;
   position: relative;
   min-height: 12rem;
   overflow: hidden;
   padding: 1.1rem;
   transition: transform 0.35s ease, border-color 0.35s ease;
+  
 }
 
 .service-card::before {
@@ -2145,4 +2167,31 @@ footer span,
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+.services-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.services-controls button {
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 1px solid rgb(var(--line));
+  border-radius: 50%;
+  background: rgb(var(--paper) / 0.55);
+  color: rgb(var(--ink));
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.services-controls button:hover {
+  transform: translateY(-3px);
+  border-color: rgb(var(--accent));
+  background: rgb(var(--accent) / 0.12);
 }
