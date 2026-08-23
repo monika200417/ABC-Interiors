@@ -361,39 +361,87 @@ function About() {
 
 function Services() {
   const servicesTrackRef = useRef(null);
+
   const moveServices = (direction) => {
-  const track = servicesTrackRef.current;
-
-  if (!track) return;
-
-  const currentX = Number(gsap.getProperty(track, "x")) || 0;
-
-  const step = 26 * 16 + 20;
-
-  gsap.to(track, {
-    x: currentX + direction * step,
-    duration: 0.7,
-    ease: "power2.out",
-  });
-};
-
-  useEffect(() => {
     const track = servicesTrackRef.current;
 
     if (!track) return;
 
-    const distance = track.scrollWidth / 2;
+    const currentX =
+      Number(gsap.getProperty(track, "x")) || 0;
+
+    const step = 26 * 16 + 20;
 
     gsap.to(track, {
-      x: -distance,
-      duration: 35,
-      ease: "none",
-      repeat: -1,
+      x: currentX + direction * step,
+      duration: 0.7,
+      ease: "power2.out",
     });
-  }, []);
+  };
+
+useEffect(() => {
+  const track = servicesTrackRef.current;
+
+  if (!track) return;
+
+  const distance = track.scrollWidth / 2;
+
+  gsap.set(track, {
+    x: 0,
+  });
+
+  gsap.to(track, {
+    x: -distance,
+    duration: 70,
+    ease: "none",
+    repeat: -1,
+  });
+}, []);
+
+  const renderServiceCards = (duplicate = false) =>
+    services.map(([name, Icon], index) => {
+      const imageNumber = String(index + 1).padStart(2, "0");
+
+      const imageKey = `./assets/${imageNumber}_${name.replace(
+        / /g,
+        "_"
+      )}.jpg`;
+
+      const serviceImage = serviceImages[imageKey];
+
+      return (
+        <article
+          className="service-card"
+          key={`${name}-${duplicate ? "duplicate" : "original"}`}
+          data-reveal
+          style={{
+            "--delay": `${(index % 8) * 0.04}s`,
+            "--service-image": serviceImage
+              ? `url(${serviceImage})`
+              : "none",
+          }}
+        >
+          <div className="service-icon">
+            <Icon />
+          </div>
+
+          <h3>{name}</h3>
+
+          <a
+            href="#contact"
+            aria-label={`Learn more about ${name}`}
+          >
+            Learn more <FiArrowRight />
+          </a>
+        </article>
+      );
+    });
 
   return (
-    <section id="services" className="section services-section">
+    <section
+      id="services"
+      className="section services-section"
+    >
       <SectionIntro
         eyebrow="Capabilities"
         title="Spaces Designed to Feel Like They Were Made for You."
@@ -402,74 +450,40 @@ function Services() {
       />
 
       <div
-  className="services-grid"
-  ref={servicesTrackRef}
-  onMouseEnter={() => {
-    gsap.getTweensOf(servicesTrackRef.current).forEach(
-      (tween) => tween.pause()
-    );
-  }}
-  onMouseLeave={() => {
-    gsap.getTweensOf(servicesTrackRef.current).forEach(
-      (tween) => tween.resume()
-    );
-  }}
->
-        {services.map(([name, Icon], index) => {
-          const imageNumber = String(index + 1).padStart(2, "0");
-
-          const imageKey = `./assets/${imageNumber}_${name.replace(
-            / /g,
-            "_"
-          )}.jpg`;
-
-          const serviceImage = serviceImages[imageKey];
-
-          return (
-            <article
-              className="service-card"
-              key={name}
-              data-reveal
-              style={{
-                "--delay": `${(index % 8) * 0.04}s`,
-                "--service-image": serviceImage
-                  ? `url(${serviceImage})`
-                  : "none",
-              }}
-            >
-              <div className="service-icon">
-                <Icon />
-              </div>
-
-              <h3>{name}</h3>
-
-              <a
-                href="#contact"
-                aria-label={`Learn more about ${name}`}
-              >
-                Learn more <FiArrowRight />
-              </a>
-            </article>
-          );
-        })}
+        className="services-grid"
+        ref={servicesTrackRef}
+        onMouseEnter={() => {
+          gsap
+            .getTweensOf(servicesTrackRef.current)
+            .forEach((tween) => tween.pause());
+        }}
+        onMouseLeave={() => {
+          gsap
+            .getTweensOf(servicesTrackRef.current)
+            .forEach((tween) => tween.resume());
+        }}
+      >
+        {renderServiceCards(false)}
+        {renderServiceCards(true)}
       </div>
-      <div className="services-controls">
-  <button
-    type="button"
-    onClick={() => moveServices(1)}
-    aria-label="Move services right"
-  >
-    ←
-  </button>
 
-  <button
-    type="button"
-    onClick={() => moveServices(-1)}
-    aria-label="Move services left"
-  >
-    →
-  </button>
-</div>
+      <div className="services-controls">
+        <button
+          type="button"
+          onClick={() => moveServices(1)}
+          aria-label="Move services right"
+        >
+          ←
+        </button>
+
+        <button
+          type="button"
+          onClick={() => moveServices(-1)}
+          aria-label="Move services left"
+        >
+          →
+        </button>
+      </div>
     </section>
   );
 }
