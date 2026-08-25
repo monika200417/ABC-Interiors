@@ -825,7 +825,7 @@ img {
 .testimonial-card strong,
 .blog-list h3 {
   margin: 0 0 0.35rem;
-  color: rgb(var(--ink));
+  color: #fff;
   font-family: "Cormorant Garamond", serif;
   font-size: 1.65rem;
   font-weight: 600;
